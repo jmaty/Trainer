@@ -805,7 +805,7 @@ class Trainer:
             #      File "/storage/plzen4-ntis/home/jmatouse/GIT_repos/Coqui-TTS-0.15/TTS/tts/models/vits.py", line 1615, in get_sampler
             #           multi_dict = config.weighted_sampler_multipliers.get(attr_name, None)
             # `config.weighted_sampler_multipliers` is expected to be (empty) dict but not None!
-            if config.weighted_sampler_multipliers == None:
+            if hasattr(config, "weighted_sampler_multipliers") and config.weighted_sampler_multipliers == None:
                 config.weighted_sampler_multipliers = {}
         
         # update the config.json fields and copy it to the output folder
