@@ -1820,19 +1820,23 @@ class Trainer:
                 self.model.test_log(test_outputs, self.dashboard_logger, self.training_assets, self.total_steps_done)
         # JMa: Save test files
         if self.config.save_test_files:
-            # `test_run()` returns dict with "audios"/figures item (e.g. VITS or Tacotron2)
-            if isinstance(test_outputs, dict) and "audios" in test_outputs and "figures" in test_outputs:
-                audios = test_outputs["audios"]
-                figures = test_outputs["figures"]
-            # `test_run()` returns list with the following items: figures, audios (e.g. GlowTTS)
-            elif isinstance(test_outputs, (list, tuple)) and len(test_outputs) == 2:
-                figures, audios = test_outputs[0], test_outputs[1]
+            # Check `test_run()` output
+            assert isinstance(test_outputs, (dict, list, tuple)), " [!] `test_run()` output must be dict, list, or tuple."
+            if isinstance(test_outputs, dict):
+                # `test_run()` returns dict with "audios"/figures item (e.g. VITS, Tacotron2, or XTTS)
+                audios = test_outputs.get("audios")
+                figures = test_outputs.get("figures")
             else:
-                # `test_run()` doesn't return audios/figures
-                raise RuntimeError("Test output doesn't contain audios and/or figures.")
+                # `test_run()` returns list with the following items: figures, audios (e.g. GlowTTS)
+                assert len(test_outputs) == 2, " [!] `test_run()` output must be a list/tuple of length 2"
+                figures, audios = test_outputs[0], test_outputs[1]
+            if audios is None:
+                # `test_run()` doesn't return audios
+                raise RuntimeError(" [!] `test_run()` output doesn't contain audios.")
             save_label = f"{self.total_steps_done:09}-{self.epochs_done:05}" if self.config.use_epoch_in_path else f"{self.total_steps_done:09}"
             save_audio(audios, self.config.audio.sample_rate, save_label, f"{self.output_path}/test_audios")
-            save_figure(figures, save_label, f"{self.output_path}/test_figures")
+            if figures:
+                save_figure(figures, save_label, f"{self.output_path}/test_figures")
 
     def _restore_best_loss(self):
         """Restore the best loss from the args.best_path if provided else
