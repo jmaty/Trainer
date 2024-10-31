@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import gc
 import importlib
+import json
 import logging
 import os
 import platform
@@ -9,7 +10,7 @@ import sys
 import time
 import traceback
 from contextlib import nullcontext
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from inspect import signature
 from typing import Callable, Dict, List, Tuple, Union
 
@@ -267,6 +268,11 @@ class TrainerConfig(Coqpit):
         default=54321,
         metadata={"help": "Global seed for torch, random and numpy random number generator. Defaults to 54321"},
     )
+
+    # DT: override, sorts JSON by keys for simpler config comparisons
+    def save_json(self, file_name:str) :
+        with open(file_name, "w", encoding="utf8") as f:
+            json.dump(asdict(self), f, indent=4, sort_keys=True)
 
 
 @dataclass
